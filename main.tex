@@ -63,15 +63,10 @@ spans 91 calendar days, and the final one ends on
 15 September 2027.
 
 Let \(U_0=t_0\), and let \(U_1,\ldots,U_{30}\) be the annual
-payment dates from the course schedule. The first payment date,
-\(U_1=\text{19 August 2027}\), falls between the SR3 endpoints
-\(A=\text{16 June 2027}\) and \(B=\text{15 September 2027}\).
-We interpolate the simple spot rates from \(t_0\) to these dates:
-\[
-L(T)=\frac{1/P(t_0,T)-1}{\alpha(t_0,T)},\qquad
-L(U_1)=\frac{27}{91}L(A)+\frac{64}{91}L(B).
-\]
-This gives \(P(t_0,U_1)=[1+\alpha(t_0,U_1)L(U_1)]^{-1}\approx 0.9614\).
+OIS payment dates from the course schedule. We obtain the first
+payment discount factor \(P(t_0,U_1)\) by interpolating simple
+ACT/360 spot rates between the two SR3 maturities that bracket
+\(U_1\). Part~\ref{subsec:1e} gives the calculation.
 
 For a spot-starting OIS maturing at \(U_n\), write
 \(\alpha_i=\alpha(U_{i-1},U_i)\) and let \(K_n\) be the par
@@ -94,7 +89,7 @@ the recursion sequentially from \(U_2\) through \(U_{30}\).
 The bootstrap yields discount factors at 38 future reset and payment
 dates, in addition to \(P(t_0,t_0)=1\). 
 
-\subsection{Repricing the market instruments}
+\subsection{Repricing the market instruments}\label{subsec:1b}
 
 We recompute each Table~\ref{tab:bootstrap-repricing} quote from the
 discount factors \(P(t_0,T)\) using the previous pricing formulas. For the overnight
@@ -124,7 +119,7 @@ basis points is
 e_{\mathrm{bp}}=100\bigl(\widehat q-q_{\mathrm{market}}\bigr).
 \]
 
-\begin{table}[htbp]
+\begin{table}[H]
   \centering
   \caption{Market and repriced SOFR quotes.}
   \label{tab:bootstrap-repricing}
@@ -156,7 +151,7 @@ This is the expected result of exact bootstrapping, since each
 quoted instrument is repriced with the same formula used to
 construct the curve.
 
-\subsection{Zero-coupon bond prices and spot rates}
+\subsection{Zero-coupon bond prices and spot rates}\label{subsec:1c}
 
 We take the discount factors \(P(t_0,T_i)\) from the bootstrapped
 curve at the maturities listed in Table~2 of the project instructions.
@@ -171,7 +166,7 @@ The continuously compounded spot rate \(y(t_0,T_i)\) satisfies
 y(t_0,T_i)=-\frac{\log P(t_0,T_i)}{\delta(t_0,T_i)}.
 \]
 
-\begin{table}[htbp]
+\begin{table}[H]
   \centering
   \caption{Zero-coupon bond prices and continuously compounded spot rates.}
   \label{tab:zero-coupon-bonds}
@@ -194,8 +189,82 @@ y(t_0,T_i)=-\frac{\log P(t_0,T_i)}{\delta(t_0,T_i)}.
   \end{tabular}
 \end{table}
 
-\subsection{}
-\subsection{}
+\subsection{Interpolated discount, spot, and forward curves}\label{subsec:1d}
+
+We use the ten discount factors from part~\ref{subsec:1c} and the spot
+normalization \(P(t_0,t_0)=1\). Let \(\tau=\delta(t_0,T)\) denote
+time to maturity under ACT/365. Between consecutive nodes with
+times \(\tau_i\) and \(\tau_{i+1}\), we interpolate the log
+discount factor as
+\[
+\log P(t_0,T)
+  = (1-w)\log P(t_0,T_i) + w\log P(t_0,T_{i+1}),
+\qquad
+w=\frac{\tau-\tau_i}{\tau_{i+1}-\tau_i}.
+\]
+We evaluate the interpolated curve at the 10,950 daily maturities
+\(\tau=m/365\), for \(m=1,\ldots,365\times30\).
+
+The continuously compounded spot rate is
+\(y(t_0,T)=-\log P(t_0,T)/\tau\). The instantaneous forward rate is
+the negative slope of the log discount factor with respect to
+\(\tau\). Within each interpolation interval, it is therefore
+constant and given by
+\[
+f(t_0,T)
+  = \frac{\log P(t_0,T_i)-\log P(t_0,T_{i+1})}
+         {\tau_{i+1}-\tau_i}.
+\]
+This gives the forward curve its step shape, with changes in slope
+at the interpolation nodes.
+
+Figure~\ref{fig:bootstrap-curves} shows the discount curve and
+the two rate curves. The crosses mark the ten discount factors
+from part~\ref{subsec:1c}. The final cross is at \(30.0274\) ACT/365 years,
+so the discount line extends to that node beyond the 30-year grid.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/question_1d_curves.pdf}
+  \caption{Log-linear discount curve and the associated continuously
+  compounded spot and instantaneous forward rates.}
+  \label{fig:bootstrap-curves}
+\end{figure}
+
+\subsection{The first annual OIS payment date}\label{subsec:1e}
+
+The 19 August 2027 row in Table~\ref{tab:zero-coupon-bonds} corresponds to \(U_1\), the first annual OIS payment date.
+Table~\ref{tab:bootstrap-repricing} gives OIS quotes starting at the 2Y maturity, so
+\(P(t_0,U_1)\) must be obtained from the futures segment.
+
+The date \(U_1\) lies between the last two SR3 maturities,
+\(A=\text{16 June 2027}\) and \(B=\text{15 September 2027}\).
+The SR3 bootstrap gives \(P(t_0,A)\approx 0.9682\) and
+\(P(t_0,B)\approx 0.9585\). Using the full-precision discount
+factors, we calculate the simple ACT/360 spot rates:
+\[
+L(A)=\frac{1/P(t_0,A)-1}{301/360}\approx 3.9296\%,
+\qquad
+L(B)=\frac{1/P(t_0,B)-1}{392/360}\approx 3.9767\%.
+\]
+The interval from \(A\) to \(B\) spans 91 days. Since \(U_1\)
+is 64 days after \(A\) and 27 days before \(B\), linear
+interpolation of the simple spot rates gives
+\[
+L(U_1)=\frac{27}{91}L(A)+\frac{64}{91}L(B)
+      \approx 3.9627\%.
+\]
+There are 365 days from \(t_0\) to \(U_1\), so
+\[
+P(t_0,U_1)=\frac{1}{1+(365/360)L(U_1)}\approx 0.9614.
+\]
+Using ACT/365 for reporting, the time to maturity is
+\(1.0000\) year and the continuously compounded spot rate is
+\(3.9391\%\).
+
+With \(P(t_0,U_1)\) known, the 2Y par quote determines
+\(P(t_0,U_2)\approx 0.9233\). The first payment's discount factor
+also enters the fixed-leg annuity for every longer OIS.
 
 \section{Comparing exact and smoothing methods}
 
