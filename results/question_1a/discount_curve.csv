@@ -1,0 +1,40 @@
+date,discount_factor,source
+2026-08-19,1,spot normalization
+2026-08-20,0.99989945455484752,SOFR ON
+2026-09-01,0.99868764121547271,SR1 Aug-26
+2026-09-16,0.99715196327331257,log-linear discount interpolation
+2026-10-01,0.99561864673690614,SR1 Sep-26
+2026-12-16,0.98765252920388225,SR3 Sep-26
+2027-03-17,0.97794243015460713,SR3 Dec-26
+2027-06-16,0.9681896673760263,SR3 Mar-27
+2027-08-19,0.96137464138814177,linear simple-spot-rate interpolation
+2027-09-15,0.95849578710868766,SR3 Jun-27
+2028-08-21,0.92325984798178129,OIS 2Y
+2029-08-20,0.88737063560829044,OIS 3Y
+2030-08-19,0.85217060321584226,OIS bootstrap with interpolated par swap rate
+2031-08-19,0.81793076666468378,OIS 5Y
+2032-08-19,0.78362061587437648,OIS bootstrap with interpolated par swap rate
+2033-08-19,0.75016607576099059,OIS 7Y
+2034-08-21,0.71730787378842764,OIS bootstrap with interpolated par swap rate
+2035-08-20,0.68548903228106872,OIS bootstrap with interpolated par swap rate
+2036-08-19,0.65436598221059905,OIS 10Y
+2037-08-19,0.62520605442556021,OIS bootstrap with interpolated par swap rate
+2038-08-19,0.5969464256190119,OIS bootstrap with interpolated par swap rate
+2039-08-19,0.56957073406377534,OIS bootstrap with interpolated par swap rate
+2040-08-20,0.5429225698100445,OIS bootstrap with interpolated par swap rate
+2041-08-19,0.51733705694607401,OIS 15Y
+2042-08-19,0.49428352163298084,OIS bootstrap with interpolated par swap rate
+2043-08-19,0.4721165089813309,OIS bootstrap with interpolated par swap rate
+2044-08-19,0.45074859818035473,OIS bootstrap with interpolated par swap rate
+2045-08-21,0.43015592879228065,OIS bootstrap with interpolated par swap rate
+2046-08-20,0.41052204120922536,OIS 20Y
+2047-08-19,0.39322213843378445,OIS bootstrap with interpolated par swap rate
+2048-08-19,0.37658987750305417,OIS bootstrap with interpolated par swap rate
+2049-08-19,0.36072819664077233,OIS bootstrap with interpolated par swap rate
+2050-08-19,0.34555966136082639,OIS bootstrap with interpolated par swap rate
+2051-08-21,0.3309776939138363,OIS bootstrap with interpolated par swap rate
+2052-08-19,0.31714484314000951,OIS bootstrap with interpolated par swap rate
+2053-08-19,0.30387941416569342,OIS bootstrap with interpolated par swap rate
+2054-08-19,0.29119277675265309,OIS bootstrap with interpolated par swap rate
+2055-08-19,0.27905946423679084,OIS bootstrap with interpolated par swap rate
+2056-08-21,0.26736391065596476,OIS 30Y

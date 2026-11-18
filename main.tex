@@ -233,9 +233,11 @@ so the discount line extends to that node beyond the 30-year grid.
 
 \subsection{The first annual OIS payment date}\label{subsec:1e}
 
-The 19 August 2027 row in Table~\ref{tab:zero-coupon-bonds} corresponds to \(U_1\), the first annual OIS payment date.
-Table~\ref{tab:bootstrap-repricing} gives OIS quotes starting at the 2Y maturity, so
-\(P(t_0,U_1)\) must be obtained from the futures segment.
+The 19 August 2027 row in Table~\ref{tab:zero-coupon-bonds}
+is the only row without a matching maturity in Table~1 of the
+project instructions. It corresponds to \(U_1\), the first annual
+OIS payment date. Since the quoted OIS maturities start at 2Y,
+we obtain \(P(t_0,U_1)\) from the futures segment.
 
 The date \(U_1\) lies between the last two SR3 maturities,
 \(A=\text{16 June 2027}\) and \(B=\text{15 September 2027}\).
