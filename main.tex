@@ -18,8 +18,141 @@
 
 \section{Bootsrapping}
 
-\subsection{}
-\subsection{}
+\subsection{Constructing the discount curve}\label{subsec:1a}
+
+Let \(D(T)=P(t_0,T)\) denote the discount factor from the spot
+date \(t_0=\text{19 August 2026}\) to \(T\), with \(D(t_0)=1\).
+We use ACT/360 and write \(\alpha(A,B)\) for the accrual fraction
+between \(A\) and \(B\).
+
+The overnight SOFR quote is \(3.62\%\) per year. From the spot date
+to \(T=\text{20 August 2026}\), the accrual fraction is \(1/360\).
+Discounting the principal plus one day's simple interest gives
+\[
+D(T)=\frac{1}{1+0.0362\times\frac{1}{360}}
+    \approx 0.9999.
+\]
+We assume zero futures convexity adjustment and use the implied
+futures rate as the simple forward rate \(F(t_0;A,B)\). For SR1,
+this follows the approximation of using the arithmetic
+average of daily SOFR as a proxy for the simple forward rate.
+The forward-rate identity gives
+\[
+1+\alpha(A,B)F(t_0;A,B)=\frac{D(A)}{D(B)},
+\qquad
+D(B)=\frac{D(A)}{1+\alpha(A,B)F(t_0;A,B)}.
+\]
+The modified August SR1 contract accrues from the spot date to
+1 September 2026, giving a 13-day accrual period. We apply the
+recursion over this period and then over the September SR1
+period, from 1 September to 1 October 2026.
+
+The first SR3 contract starts on 16 September 2026, halfway
+between the two SR1 end dates. We interpolate the logarithms of
+the corresponding discount factors:
+\[
+\log D(\text{16 Sep 2026})
+  = \tfrac12\log D(\text{1 Sep 2026})
+  + \tfrac12\log D(\text{1 Oct 2026}).
+\]
+Starting from this node, we apply the same forward-rate recursion
+across the four SR3 reference quarters. Each quarter
+spans 91 calendar days, and the final one ends on
+15 September 2027.
+
+Let \(U_0=t_0\), and let \(U_1,\ldots,U_{30}\) be the annual
+payment dates from the course schedule. The first payment date,
+\(U_1=\text{19 August 2027}\), falls between the SR3 endpoints
+\(A=\text{16 June 2027}\) and \(B=\text{15 September 2027}\).
+We interpolate the simple spot rates from \(t_0\) to these dates:
+\[
+L(T)=\frac{1/D(T)-1}{\alpha(t_0,T)},\qquad
+L(U_1)=\frac{27}{91}L(A)+\frac{64}{91}L(B).
+\]
+This gives \(D(U_1)=[1+\alpha(t_0,U_1)L(U_1)]^{-1}=0.9614\).
+
+For a spot-starting OIS maturing at \(U_n\), write
+\(\alpha_i=\alpha(U_{i-1},U_i)\) and let \(K_n\) be the par
+fixed rate. The discounted floating payments telescope to
+\(1-D(U_n)\). Equating the two legs gives
+\[
+K_n\sum_{i=1}^{n}\alpha_i D(U_i)=1-D(U_n).
+\]
+Solving for the final discount factor yields
+\[
+D(U_n)
+  = \frac{1-K_n\sum_{i=1}^{n-1}\alpha_i D(U_i)}
+         {1+K_n\alpha_n}.
+\]
+For an annual maturity without a quoted OIS rate, we interpolate
+the par fixed rate linearly between the surrounding quoted
+maturities, using actual calendar-day distances. We then apply
+the recursion sequentially from \(U_2\) through \(U_{30}\).
+
+The bootstrap yields discount factors at 38 future reset and payment
+dates, in addition to \(P(t_0,t_0)=1\). 
+
+\subsection{Repricing the market instruments}
+
+We recompute each Table~\ref{tab:bootstrap-repricing} quote from the discount factors \(D(T)\)
+using the previous pricing formulas. For the overnight
+instrument and the futures, the implied annual rate over the
+accrual period \([A,B)\) is
+\[
+\widehat r(A,B)
+  = \frac{D(A)/D(B)-1}{\alpha(A,B)}.
+\]
+We convert this rate back to the original quote convention:
+\(100\widehat r\) for overnight SOFR and \(100(1-\widehat r)\)
+for SR1 and SR3. We retain the modified August SR1 accrual period
+and the futures assumptions used in part~\ref{subsec:1a}.
+
+For an OIS maturing at \(U_n\), we recover the par fixed rate by
+dividing the present value of the floating leg by the fixed-leg
+annuity:
+\[
+\widehat K_n
+  = \frac{1-D(U_n)}{\sum_{i=1}^{n}\alpha_i D(U_i)}.
+\]
+The repriced OIS quote is \(100\widehat K_n\). With both quotes
+expressed in their original quotation units, the signed quote
+error in basis points is
+\[
+e_{\mathrm{bp}}=100\bigl(\widehat q-q_{\mathrm{market}}\bigr).
+\]
+
+\begin{table}[htbp]
+  \centering
+  \caption{Market and repriced SOFR quotes.}
+  \label{tab:bootstrap-repricing}
+  \begin{tabular}{lrrr}
+    \toprule
+    Instrument & Market quote & Repriced quote & Error (bp) \\
+    \midrule
+    SOFR ON    &  3.6200 &  3.6200 & 0.0000 \\
+    SR1 Aug-26 & 96.3610 & 96.3610 & 0.0000 \\
+    SR1 Sep-26 & 96.3010 & 96.3010 & 0.0000 \\
+    SR3 Sep-26 & 96.1950 & 96.1950 & 0.0000 \\
+    SR3 Dec-26 & 96.0720 & 96.0720 & 0.0000 \\
+    SR3 Mar-27 & 96.0150 & 96.0150 & 0.0000 \\
+    SR3 Jun-27 & 95.9990 & 95.9990 & 0.0000 \\
+    OIS 2Y     &  4.0000 &  4.0000 & 0.0000 \\
+    OIS 3Y     &  4.0000 &  4.0000 & 0.0000 \\
+    OIS 5Y     &  4.0400 &  4.0400 & 0.0000 \\
+    OIS 7Y     &  4.1200 &  4.1200 & 0.0000 \\
+    OIS 10Y    &  4.2400 &  4.2400 & 0.0000 \\
+    OIS 15Y    &  4.3700 &  4.3700 & 0.0000 \\
+    OIS 20Y    &  4.4200 &  4.4200 & 0.0000 \\
+    OIS 30Y    &  4.4000 &  4.4000 & 0.0000 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The curve recovers all 15 input quotes to numerical precision.
+This is the expected result of exact bootstrapping, since each
+quoted instrument is repriced with the same formula used to
+construct the curve.
+
 \subsection{}
 \subsection{}
 \subsection{}
