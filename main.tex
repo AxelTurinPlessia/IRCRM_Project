@@ -270,10 +270,176 @@ also enters the fixed-leg annuity for every longer OIS.
 
 \section{Comparing exact and smoothing methods}
 
-\subsection{}
-\subsection{}
-\subsection{}
-\subsection{}
+\subsection{Calibrating the Nelson--Siegel and Svensson curves}
+\label{subsec:2a}
+
+We calibrate both models to the ten continuously compounded spot
+rates in Table~\ref{tab:zero-coupon-bonds}. Let
+\(\tau=\delta(t_0,T)\) be the ACT/365 time to maturity, and define
+\[
+I_1(x)=\frac{1-e^{-x}}{x},\qquad I_2(x)=I_1(x)-e^{-x}.
+\]
+The Nelson--Siegel (NS) and Nelson--Siegel--Svensson (NSS) yields are
+\begin{align*}
+\widehat y_{\mathrm{NS}}(\tau)
+  &= \beta_0+\beta_1 I_1(a_1\tau)+\beta_2 I_2(a_1\tau),\\
+\widehat y_{\mathrm{NSS}}(\tau)
+  &= \beta_0+\beta_1 I_1(a_1\tau)+\beta_2 I_2(a_1\tau)
+     +\beta_3 I_2(a_2\tau).
+\end{align*}
+For either model, the fitted discount factor is
+\(\widehat P(t_0,T)=\exp[-\tau\widehat y(\tau)]\).
+
+Following slide~138, we minimize the equally weighted mean squared
+yield error
+\[
+J(\theta)
+  = \frac{1}{10}\sum_{i=1}^{10}
+    \bigl[y(t_0,T_i)-\widehat y(\tau_i;\theta)\bigr]^2,
+\qquad \tau_i=\delta(t_0,T_i).
+\]
+For each choice of decay rates, we fit the \(\beta\) coefficients
+by linear least squares and record the resulting mean squared
+yield error. We first evaluate this error on a logarithmically
+spaced grid of positive decay rates. We then use several grid
+minima as starting points for local optimization and retain the
+fit with the lowest error.
+Table \ref{tab:ns-nss-calibration} reports the square root of the minimized objective in
+basis points, $10^4\sqrt{J(\hat\theta)}$.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Calibrated yield curve parameters and yield RMSE.}
+  \label{tab:ns-nss-calibration}
+  \begin{tabular}{lrr}
+    \toprule
+    Parameter & NS & NSS \\
+    \midrule
+    \(\beta_0\)            & -0.7940 & 0.0281 \\
+    \(\beta_1\)            &  0.8319 & 0.0086 \\
+    \(\beta_2\)            &  0.9648 & 0.0153 \\
+    \(\beta_3\)            &      -- & 0.0517 \\
+    \(a_1\) (/year) &  0.0092 & 1.0454 \\
+    \(a_2\) (/year) &      -- & 0.0756 \\
+    Yield RMSE (bp)        &  5.5760 & 0.0393 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+NSS fits the ten yields more closely than NS. The NS fit has a
+small decay rate and a negative \(\beta_0\). Since the fitted
+yield converges to \(\beta_0\) at long maturities, this NS
+calibration should be interpreted over the observed maturity range.
+
+\subsection{Repricing with Nelson--Siegel and Svensson}
+\label{subsec:2b}
+
+We evaluate the calibrated discount curves at each instrument's
+reset and payment dates and apply the pricing formulas from
+part~\ref{subsec:1b}. We use ACT/365 to evaluate the model curves
+and ACT/360 for the contractual accrual fractions. We compute
+signed quote errors in basis points before rounding and highlight
+the largest absolute error for each model in bold.
+
+\begin{table}[H]
+  \centering
+  \caption{Repricing with the calibrated NS and NSS curves.}
+  \label{tab:ns-nss-repricing}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    & & \multicolumn{2}{c}{NS} & \multicolumn{2}{c}{NSS} \\
+    \cmidrule(lr){3-4}\cmidrule(lr){5-6}
+    Instrument & Market quote & Quote & Error (bp) & Quote & Error (bp) \\
+    \midrule
+    SOFR ON    &  3.6200 &  3.7356 &  11.5650 &  3.6200 & -0.0048 \\
+    SR1 Aug-26 & 96.3610 & 96.2600 & -10.0951 & 96.3606 & -0.0379 \\
+    SR1 Sep-26 & 96.3010 & 96.2497 &  -5.1322 & 96.3008 & -0.0242 \\
+    SR3 Sep-26 & 96.1950 & 96.2228 &   2.7818 & 96.1948 & -0.0161 \\
+    SR3 Dec-26 & 96.0720 & 96.1933 &  12.1337 & 96.0715 & -0.0496 \\
+    SR3 Mar-27 & 96.0150 & 96.1644 & \textbf{14.9419} & 96.0159 & 0.0875 \\
+    SR3 Jun-27 & 95.9990 & 96.1361 &  13.7063 & 96.0000 &  0.1024 \\
+    OIS 2Y     &  4.0000 &  3.9251 &  -7.4888 &  3.9994 & -0.0603 \\
+    OIS 3Y     &  4.0000 &  3.9777 &  -2.2329 &  4.0002 &  0.0189 \\
+    OIS 5Y     &  4.0400 &  4.0725 &   3.2496 &  4.0402 &  0.0175 \\
+    OIS 7Y     &  4.1200 &  4.1541 &   3.4126 &  4.1195 & -0.0485 \\
+    OIS 10Y    &  4.2400 &  4.2530 &   1.3048 &  4.2400 &  0.0030 \\
+    OIS 15Y    &  4.3700 &  4.3633 &  -0.6730 &  4.3710 &  0.0968 \\
+    OIS 20Y    &  4.4200 &  4.4177 &  -0.2329 &  4.4226 &  0.2569 \\
+    OIS 30Y    &  4.4000 &  4.4070 &   0.7012 &  4.4049 & \textbf{0.4895} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The largest NS errors are concentrated among the short-dated
+instruments. Its SR3 Mar-27 quote is too high by \(14.9419\) bp,
+which means its implied futures rate is too low by the same
+amount. NSS improves the fit for 14 of the 15 instruments and
+keeps every absolute quote error below \(0.5\) bp. Its largest
+error is on the 30Y OIS. Both curves were calibrated to
+zero-coupon yields, so repricing the original instruments checks
+how the fitted discount factors perform across their reset and
+payment dates.
+
+\subsection{Comparison of spot and instantaneous forward curves}
+\label{subsec:2c}
+
+We compare the calibrated NS and NSS curves with the log-linear
+bootstrap curve from Figure \ref{fig:bootstrap-curves} on the same daily
+ACT/365 grid. For the parametric models, we compute the
+instantaneous forward rate by differentiating the fitted log
+discount factor. With \(\tau=\delta(t_0,T)\), this gives
+\[
+\widehat f_{\mathrm{NSS}}(t_0,T)
+  = \frac{d}{d\tau}\bigl[\tau\widehat y_{\mathrm{NSS}}(\tau)\bigr]
+  = \beta_0+\beta_1 e^{-a_1\tau}
+    +\beta_2 a_1\tau e^{-a_1\tau}
+    +\beta_3 a_2\tau e^{-a_2\tau}.
+\]
+The NS expression consists of the first three terms.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]
+    {figures/question_2c_curve_comparison.pdf}
+  \caption{Continuously compounded spot and instantaneous forward
+  rates for the bootstrap, NS, and NSS curves.}
+  \label{fig:ns-nss-comparison}
+\end{figure}
+
+The spot curves show a similar overall pattern. They rise
+through most of the maturity range and ease slightly at the long
+end. NSS follows the sharp initial rise more closely, consistent
+with its smaller yield fitting error in part~\ref{subsec:2a}.
+
+The forward curves show larger differences. The bootstrap forward
+rate is constant within each interpolation interval and jumps at
+the nodes. The NS and NSS forward rates vary smoothly and peak
+at about 15 and 13 years, respectively, before declining. At
+30 years, the instantaneous forward rate is \(4.2835\%\) for the
+bootstrap, \(3.9411\%\) for NS, and \(4.0227\%\) for NSS. Spot rates
+average instantaneous forward rates from the spot date to maturity,
+so similar spot curves can conceal differences in the slope of
+the log discount curve.
+
+\subsection{Choice of curve for pricing and risk}
+\label{subsec:2d}
+
+For a new SOFR instrument within the quoted maturity range, we
+would use the exact bootstrap as our primary pricing curve.
+It reproduces the market quotes, so the price is consistent
+with the instruments available to hedge the position. For cash
+flows between curve nodes, the price depends on the interpolation
+rule. We would compare it with the NSS price to assess that
+dependence.
+
+We would use the NSS curve to compute duration, convexity,
+DV01, and PV01. It combines a close fit to the observed yields
+with a smooth instantaneous forward curve. We would use the
+same NSS specification to reprice the position under each rate
+shock. When shocking market quotes, we would recalibrate NSS
+and check that small changes in the inputs produce stable risk
+estimates.
+
 
 \section{Deterministic-shift extensions}
 
