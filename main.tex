@@ -442,11 +442,105 @@ estimates.
 
 
 \section{Deterministic-shift extensions}
+AI was used in this section to improve the writing of certain points and to assist in writing certain LaTeX equations.
+\subsection{Solving for the Hull-White short rate}\label{subsec:3a}
 
-\subsection{}
-\subsection{}
-\subsection{}
-\subsection{}
+We measure time in years from the spot date, which we denote by $t=0$. Under the risk-neutral measure $\mathbb{Q}$, following Hull-White extended Vasicek model, which one has the following short-rate dynamics:
+\[
+dr(t)=\bigl(b(t)+\beta r(t)\bigr)\,dt+\sigma\,dW^*(t),
+\]
+where $W^*$ is a standard $\mathbb{Q}$-Brownian motion, $b$ is a deterministic function, and $\beta<0$ and $\sigma>0$ are constants. To eliminate the term in $r(t)$ from the drift, we multiply by $e^{-\beta t}$. This factor has finite variation, so its quadratic covariation with $r$ is zero. The product rule gives us:
+\begin{align*}
+d\bigl(e^{-\beta t}r(t)\bigr)
+  &= e^{-\beta t}\,dr(t)-\beta e^{-\beta t}r(t)\,dt \hspace{0.1in}\text{ we replace }\hspace{0.1in} dr(t)=\bigl(b(t)+\beta r(t)\bigr)\,dt+\sigma\,dW^*(t)\\
+  &= e^{-\beta t}\bigl(b(t)+\beta r(t)\bigr)\,dt
+     +\sigma e^{-\beta t}\,dW^*(t)-\beta e^{-\beta t}r(t)\,dt \\
+  &= e^{-\beta t}b(t)\,dt+\sigma e^{-\beta t}\,dW^*(t).
+\end{align*}
+Then we integrate from $0$ to $t$ to obtain the value of $r(t)$ in terms of the initial value $r(0)$, the deterministic function $b$, and the Brownian motion $W^*$:
+\[
+e^{-\beta t}r(t)-r(0)
+  = \int_0^t e^{-\beta s}b(s)\,ds
+    +\sigma\int_0^t e^{-\beta s}\,dW^*(s).
+\]
+Multiplying by $e^{\beta t}$ gives the explicit short rate $r(t)$:
+\[
+r(t)=e^{\beta t}r(0)
+     +\int_0^t e^{\beta(t-s)}b(s)\,ds
+     +\sigma\int_0^t e^{\beta(t-s)}\,dW^*(s).
+\]
+Since $\beta<0$, the effect of a shock at time $s$ decays as $t-s$ increases.
+
+\subsection{The deterministic shift of the Vasicek rate}\label{subsec:3b}
+
+Using the same Brownian motion and initial rate as in part~\ref{subsec:3a}, we define the Vasicek rate $\tilde r$ by
+\[
+d\tilde r(t)=\beta\tilde r(t)\,dt+\sigma\,dW^*(t),
+\qquad \tilde r(0)=r(0).
+\]
+Setting $b=0$ in the solution from part~\ref{subsec:3a} gives $\tilde r(t)=e^{\beta t}r(0)+\sigma\int_0^t e^{\beta(t-s)}\,dW^*(s)$. When we subtract the two rates, their initial-value terms and their stochastic integrals cancel. The remaining integral gives the deterministic shift
+\[
+\phi(t)=r(t)-\tilde r(t)=\int_0^t e^{\beta(t-s)}b(s)\,ds=e^{\beta t}\int_0^t e^{-\beta s}b(s)\,ds,
+\qquad \phi(0)=0.
+\]
+For continuous $b$, we can derive $\phi(t)$'s derivative, which gives us the relionship between $b$ and $\phi$:
+\[
+\phi'(t)=e^{\beta t} \big(\int_0^t e^{-\beta s}b(s)\,ds\big)'+(e^{\beta t})'\int_0^t e^{-\beta s}b(s)\,ds,
+=b(t)+\int_0^t \beta e^{\beta(t-s)}b(s)\,ds
+        =b(t)+\beta\phi(t).
+\]
+Thus each $b$ determines a unique shift through the integral above. Conversely, for a continuously differentiable shift with $\phi(0)=0$, we can show that $b(t)=\phi'(t)-\beta\phi(t)$. Indeed, adding $d\phi(t)=\phi'(t)\,dt$ to the Vasicek dynamics gives:
+\[
+d(\tilde r(t)+\phi(t))
+  =\bigl(\beta\tilde r(t)+\phi'(t)\bigr)\,dt+\sigma\,dW^*(t)
+  =\bigl(\beta r(t)+b(t)\bigr)\,dt+\sigma\,dW^*(t).
+\]
+
+\subsection{Zero-coupon bond prices under the shift}\label{subsec:3c}
+
+A zero-coupon bond pays one at maturity $T$. Write $\mathbb{E}^{\mathbb{Q}}_t[\cdot]$ for the risk-neutral expectation conditional on the information available at $t$. For $0\leq t\leq T$, discounting the payoff along each short-rate path gives
+\[
+P(t,T)=\mathbb{E}^{\mathbb{Q}}_t\!\left[
+         \exp\!\left(-\int_t^T r(s)\,ds\right)\right].
+\]
+The integral of $\phi$ over $[t,T]$ is the same on every path. Substituting $r(s)=\tilde r(s)+\phi(s)$ and taking the deterministic factor outside the expectation (as $\phi(t)$ is a deterministic function) gives:
+\begin{align*}
+P(t,T)
+  &=\mathbb{E}^{\mathbb{Q}}_t\!\left[
+       \exp\!\left(-\int_t^T\phi(s)\,ds\right)
+       \exp\!\left(-\int_t^T\tilde r(s)\,ds\right)\right] \\
+  &=\exp\!\left(-\int_t^T\phi(s)\,ds\right)
+       \mathbb{E}^{\mathbb{Q}}_t\!\left[
+       \exp\!\left(-\int_t^T\tilde r(s)\,ds\right)\right] \\
+  &=e^{-\int_t^T\phi(s)\,ds}\,\tilde P(t,T).
+\end{align*}
+The remaining expectation is the Vasicek price $\tilde P(t,T)$ because it discounts the same unit payoff using the rate $\tilde r$.
+
+\subsection{Fitting the initial forward curve}\label{subsec:3d}
+
+Let $f_0(T)$ denote the initial instantaneous forward rate to be fitted at maturity $T$. Let $f(0,T)$ and $\tilde f(0,T)$ denote the corresponding Hull-White and Vasicek forward rates. Taking logarithms of the bond-price identity in part~\ref{subsec:3c} at $t=0$ gives
+\[
+\log P(0,T)=-\int_0^T\phi(s)\,ds+\log\tilde P(0,T).
+\]
+The instantaneous forward rate formula is the negative partial derivative of the log bond-price with respect to the maturity. Differentiating the preceding identity at time $t=0$ gives us:
+\[
+f(0,T)=-\frac{\partial \log P(0,T)}{\partial T}
+      =\phi(T)-\frac{\partial \log \tilde P(0,T)}{\partial T}
+      =\phi(T)+\tilde f(0,T).
+\]
+If Hull-White fits $f_0$ at every maturity, substituting $f(0,T)=f_0(T)$ and solving for the shift forces
+\[
+\phi(T)=f_0(T)-\tilde f(0,T),\qquad T\geq 0.
+\]
+Conversely, if we choose this shift. Since $\tilde P(0,0)=1$, the Vasicek log price equals minus the integral of its forward rate. Substituting both expressions gives
+\begin{align*}
+\log P(0,T)
+  &=-\int_0^T\bigl(f_0(s)-\tilde f(0,s)\bigr)\,ds
+    -\int_0^T\tilde f(0,s)\,ds \\
+  &=-\int_0^T f_0(s)\,ds.
+\end{align*}
+The negative maturity derivative is $f_0(T)$, which proves sufficiency. \\
+In the Hull-White diffusion on slide~195, a continuous drift function $b$ gives a continuous shift by the integral in part~\ref{subsec:3b}. The log-linear discount curve in Figure~\ref{fig:bootstrap-curves} has a forward curve with jumps. An exact fit to this curve uses the general deterministic shift on slides~196-197. Taking right-hand forwards at the interior knots, each jump in $f_0$ gives an equal jump in $\phi$ because the Vasicek forward is continuous. The shifted rate $r=\tilde r+\phi$ follows the diffusion equation between knots and jumps by that amount at the knot. The integrated bond-price formula holds at every maturity.
 
 \section{Calibrating a short-rate model and pricing a cap}
 
